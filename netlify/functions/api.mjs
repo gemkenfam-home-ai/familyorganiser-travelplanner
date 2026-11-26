@@ -6,12 +6,17 @@
 // cookie that page JavaScript cannot read.
 
 import crypto from "node:crypto";
+import { createClient } from "@supabase/supabase-js";
 
 const env = (k) => (globalThis.Netlify?.env?.get?.(k) ?? process.env[k] ?? "").trim();
 const SUPABASE_URL = env("SUPABASE_URL").replace(/\/+$/, "");
 const ANON = env("SUPABASE_ANON_KEY");
 const SECRET = env("SECRET_KEY");
 const SECURE = env("SECURE_COOKIES").toLowerCase() !== "false";
+// Stateless client used only for auth.verifyOtp; the session lives in our own cookie.
+const supabase = createClient(SUPABASE_URL || "http://localhost", ANON || "missing", {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+});
 const BUCKET = "receipts";
 const COOKIE = "ftp_session";
 const MAX_AGE = 60 * 60 * 24 * 30;
@@ -115,9 +120,13 @@ async function route(req, ctx, st) {
     if (path === "/auth/verify") {
       const code = String(b.code || "").replace(/\D/g, "");
       if (code.length < 6) throw new ApiError(400, "Enter the code from the email.");
-      const r = await supa("POST", "/auth/v1/verify", { body: { type: "email", email, token: code } });
-      if (r.status !== 200) throw new ApiError(400, "That code is wrong or has expired - request a new one.");
-      st.sess = sessionFrom(await r.json()); st.changed = true;
+      let res;
+      try { res = await supabase.auth.verifyOtp({ email, token: code, type: "email" }); }
+      catch { throw new ApiError(502, "The database can't be reached right now - try again shortly."); }
+      const { data, error } = res;
+      if (error || !data?.session) throw new ApiError(400, "That code is wrong or has expired - request a new one.");
+      const s = data.session;
+      st.sess = sessionFrom({ ...s, user: s.user || data.user }); st.changed = true;
       return json({ ok: true });
     }
     if (path === "/auth/password") {
