@@ -224,7 +224,7 @@ function vLogin(){const mode=S.loginMode||'code',sent=mode==='code'&&S.codeSent;
 <div class="r"><form id="lf" class="lform" novalidate>
 <div class="seg"><label><input type="radio" name="lm" value="code"${mode==='code'?' checked':''}>Email me a code</label><label><input type="radio" name="lm" value="pw"${mode==='pw'?' checked':''}>Password</label></div>
 <label class="f">Email<input id="le" type="email" autocomplete="email" required value="${esc(S.lastEmail||'')}" placeholder="you@example.com"${sent?' readonly':''}></label>
-${sent?`<label class="f">6-digit code<input id="lc" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>`:''}
+${sent?`<label class="f">Code from the email<input id="lc" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>`:''}
 ${mode==='pw'?`<label class="f">Password<input id="lp" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label>`:''}
 <button class="pri" type="submit" id="lgo">${mode==='pw'?'Sign in':sent?'Sign in':'Send me a code'}</button>
 ${mode==='pw'?'<button type="button" class="ghost" id="lsignup">First time? Create my password</button>':''}
