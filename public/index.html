@@ -219,10 +219,10 @@ const isAdmin=()=>S.role==='admin';
 
 /* ---------- sign-in screens ---------- */
 const lockArt=`<svg viewBox="0 0 160 120" aria-hidden="true" class="lockart"><rect x="18" y="26" width="124" height="80" rx="14" fill="var(--card)" stroke="var(--line)" stroke-width="2"/><rect x="18" y="26" width="124" height="22" rx="14" fill="#0e4f4c"/><rect x="18" y="38" width="124" height="10" fill="#0e4f4c"/><circle cx="104" cy="26" r="7" fill="var(--bg)"/><circle cx="104" cy="106" r="7" fill="var(--bg)"/><line x1="104" y1="34" x2="104" y2="98" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/><rect x="32" y="60" width="52" height="7" rx="3.5" fill="var(--line)"/><rect x="32" y="74" width="36" height="7" rx="3.5" fill="var(--line)"/><rect x="112" y="64" width="22" height="20" rx="4" fill="#ff6a4d"/><path d="M116 64v-5a7 7 0 0 1 14 0v5" fill="none" stroke="#ff6a4d" stroke-width="3.5"/></svg>`;
-function vLogin(){const mode=S.loginMode||'code',sent=mode==='code'&&S.codeSent;return `<section class="band hero login"><div class="wrap"><div class="pass">
+function vLogin(){const mode=S.loginMode||'pw',sent=mode==='code'&&S.codeSent;return `<section class="band hero login"><div class="wrap"><div class="pass">
 <div class="l">${lockArt}<h1>Family sign-in</h1><p class="mute">This portal is private. Only family members the admin has added can see trips, budgets and receipts.</p></div>
 <div class="r"><form id="lf" class="lform" novalidate>
-<div class="seg"><label><input type="radio" name="lm" value="code"${mode==='code'?' checked':''}>Email me a code</label><label><input type="radio" name="lm" value="pw"${mode==='pw'?' checked':''}>Password</label></div>
+<div class="seg"><label><input type="radio" name="lm" value="pw"${mode==='pw'?' checked':''}>Email &amp; password</label><label><input type="radio" name="lm" value="code"${mode==='code'?' checked':''}>Email me a code</label></div>
 <label class="f">Email<input id="le" type="email" autocomplete="email" required value="${esc(S.lastEmail||'')}" placeholder="you@example.com"${sent?' readonly':''}></label>
 ${sent?`<label class="f">Code from the email<input id="lc" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>`:''}
 ${mode==='pw'?`<label class="f">Password<input id="lp" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label>`:''}
@@ -230,7 +230,7 @@ ${mode==='pw'?`<label class="f">Password<input id="lp" type="password" autocompl
 ${mode==='pw'?'<button type="button" class="ghost" id="lsignup">First time? Create my password</button>':''}
 ${sent?'<button type="button" class="ghost" id="lback">Use a different email</button>':''}
 <p class="note" id="lmsg" ${S.loginMsg?'':'hidden'}>${esc(S.loginMsg||'')}</p>
-<p class="small mute">${mode==='code'?'We’ll email you a one-time code — no password needed.':'Use the email address the family admin added.'}</p>
+<p class="small mute">${mode==='code'?'We’ll email you a one-time code — no password needed.':'Use the email address the family admin added. Forgot your password? Choose “Email me a code”.'}</p>
 </form></div></div></div></section>`}
 function bindLogin(){const f=$('#lf');if(!f)return;
   f.onchange=ev=>{if(ev.target.name==='lm'){S.loginMode=ev.target.value;S.loginMsg='';S.codeSent=false;S.lastEmail=$('#le').value;render()}};
@@ -238,7 +238,7 @@ function bindLogin(){const f=$('#lf');if(!f)return;
   const go=async signup=>{const email=$('#le').value.trim().toLowerCase();S.lastEmail=email;if(!/^\S+@\S+\.\S+$/.test(email)){msg('Enter a valid email address.');return}
     const b=$('#lgo');b.disabled=true;
     try{
-      const mode=S.loginMode||'code';
+      const mode=S.loginMode||'pw';
       if(mode==='code'&&!S.codeSent){await api('POST','/api/auth/code',{email});S.codeSent=true;S.loginMsg='We’ve emailed you a code. It can take a minute — check spam too.';render();$('#lc')?.focus();return}
       if(mode==='code'){const r=await api('POST','/api/auth/verify',{email,code:$('#lc').value});S.codeSent=false;S.loginMsg='';await whoAmI();return}
       const pw=$('#lp').value;if(pw.length<8){msg('Passwords need at least 8 characters.');return}
