@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family Trip Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a calm, competent booking portal for a family's money — clear figures, no fuss.
+   IDEA: the boarding pass and luggage tag — every trip is a pass, every cost a stub.
+   PICTURE: a big boarding-pass card holding the live total, budget meter and category strip.
+   COLOUR and TYPE: deep lagoon teal band, sand-white ground, one coral accent; Barlow Semi Condensed (airport signage) + Barlow.
+   LAYOUT: sticky portal header with trip switcher and tabs; each tab one focused working surface. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f6f4ef,#0b1817);--card:light-dark(#ffffff,#122523);--ink:light-dark(#12201f,#e9f1ef);--mute:light-dark(#5d6b69,#9fb1ae);
+--line:light-dark(#e3e0d8,#23403c);--band:light-dark(#0e4f4c,#08302e);--bandink:#eaf6f3;--acc:#ff6a4d;--acc2:light-dark(#c9432a,#ff8b73);
+--ok:light-dark(#1f7a55,#5fd3a0);--warn:light-dark(#b4441f,#ff9b7d);--soft:light-dark(#eef3f1,#173230)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3,.disp{font-family:"Barlow Semi Condensed",Barlow,sans-serif;line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(32px,5vw,48px);font-weight:700}h2{font-size:28px;font-weight:700}h3{font-size:19px;font-weight:600}
+a{color:inherit}
+.band{padding:clamp(20px,3.5vw,44px) max(4vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+header{background:var(--band);color:var(--bandink);position:sticky;top:0;z-index:5}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px max(4vw,16px) 0;max-width:1240px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font:700 21px "Barlow Semi Condensed",sans-serif;margin-right:auto}
+.brand svg{width:34px;height:34px}
+select,input,textarea{font:16px Barlow,sans-serif;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-height:44px;width:100%}
+header select{width:auto;max-width:62vw;background:#ffffff1a;color:var(--bandink);border-color:#ffffff40}
+header select option{color:#12201f}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px max(4vw,16px) 0;max-width:1240px;margin:0 auto;scrollbar-width:none}
+nav a{flex:none;text-decoration:none;padding:10px 14px 12px;border-radius:10px 10px 0 0;font-weight:600;color:#cfe7e2}
+nav a[aria-current=page]{background:var(--bg);color:var(--ink)}
+button,.btn{font:600 15px Barlow,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}button.ghost{background:transparent}
+button.dang{color:var(--warn)}button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{margin-left:auto}
+.mute{color:var(--mute)}.small{font-size:14px}.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.hero{background:var(--band);color:var(--bandink);padding-top:6px}
+.pass{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);background:var(--card);color:var(--ink);border-radius:20px;box-shadow:0 18px 40px #00000030;overflow:hidden;position:relative}
+.pass .l{padding:24px 26px}.pass .r{padding:24px 26px;border-left:2px dashed var(--line);background:var(--soft)}
+.pass::before,.pass::after{content:"";position:absolute;left:60%;width:28px;height:28px;border-radius:50%;background:var(--band);transform:translateX(-50%)}
+.pass::before{top:-14px}.pass::after{bottom:-14px}
+.lbl{font-size:13px;color:var(--mute);font-weight:500}
+.route{display:flex;align-items:center;gap:14px;margin:14px 0}.route .code{font:700 clamp(34px,6vw,52px)/1 "Barlow Semi Condensed",sans-serif;letter-spacing:.02em}
+.route .line{flex:1;border-top:2px dotted var(--mute);position:relative}.route .line svg{position:absolute;left:50%;top:-12px;width:24px;height:24px;transform:translateX(-50%);fill:var(--acc);background:var(--card)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px 16px;margin-top:6px}.facts b{display:block;font-size:17px}
+.big{font:700 clamp(34px,5.5vw,50px)/1 "Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter{height:12px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:12px 0 6px}.meter i{display:block;height:100%}
+.strip{display:flex;height:16px;border-radius:6px;overflow:hidden;background:var(--line);margin-top:16px}.strip i{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:14px}.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0}
+.bars .b{display:grid;grid-template-columns:8.5em minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0}
+.bars .t{height:12px;background:var(--soft);border-radius:99px;overflow:hidden;position:relative}.bars .t i{position:absolute;inset:0 auto 0 0;border-radius:99px}
+.bars .t i.pl{opacity:.35}.bars .t u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+table{width:100%;border-collapse:collapse}th{font-size:13px;color:var(--mute);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}tbody tr:hover{background:var(--soft)}
+.tag{display:inline-block;font-size:13px;padding:2px 8px;border-radius:99px;background:var(--soft);white-space:nowrap}.tag.pl{background:transparent;border:1px dashed var(--mute)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}.chips button{flex:none;border-radius:99px;min-height:38px;font-weight:500}.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.person{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center}.av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:700 19px "Barlow Semi Condensed";color:#fff;grid-row:span 2}
+.bal{font:700 26px "Barlow Semi Condensed";font-variant-numeric:tabular-nums}.pos{color:var(--ok)}.neg{color:var(--warn)}
+.settle li{padding:10px 0;border-bottom:1px solid var(--line);list-style:none}.settle{padding:0;margin:0}
+.rgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.rc{display:block;text-decoration:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.rc .th{aspect-ratio:4/3;background:var(--soft);display:grid;place-items:center;overflow:hidden}.rc img{width:100%;height:100%;object-fit:cover}
+.rc .th b{font:700 26px "Barlow Semi Condensed";color:var(--acc2)}.rc div.c{padding:10px 12px;font-size:14px}
+.empty{text-align:center;padding:48px 16px}.empty svg{width:120px;height:120px;margin-bottom:10px}
+dialog{border:0;border-radius:18px;padding:0;width:min(640px,94vw);max-height:92vh;background:var(--card);color:var(--ink);box-shadow:0 30px 80px #0007}
+dialog::backdrop{background:#04131299}
+dialog form{padding:22px;display:grid;gap:14px}.f2{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+label.f{display:grid;gap:5px;font-size:14px;font-weight:600}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.seg label{flex:1;text-align:center;padding:10px 6px;cursor:pointer;font-weight:600;font-size:14px}
+.seg input{position:absolute;opacity:0}.seg label:has(input:checked){background:var(--ink);color:var(--bg)}
+.who{display:grid;grid-template-columns:minmax(0,1fr) 120px auto;gap:10px;align-items:center;padding:4px 0}.who label{display:flex;gap:10px;align-items:center;font-weight:500}
+.who input[type=checkbox]{width:22px;height:22px;min-height:0;accent-color:var(--acc)}
+.note{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:14px}
+body.locked nav,body.locked #tripSel,body.locked .me{display:none}
+.me{display:flex;align-items:center;gap:8px;color:#cfe7e2}.me button{color:var(--bandink);border-color:#ffffff40;min-height:40px}
+.lockart{width:150px;height:auto;margin-bottom:14px}.login .pass{max-width:900px;margin:0 auto}.lform{display:grid;gap:14px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20;max-width:90vw}
+#toast.on{opacity:1}
+.banner{background:var(--soft);border-bottom:1px solid var(--line);padding:8px max(4vw,16px);font-size:14px}
+.scroll{overflow-x:auto}html{scroll-padding-top:120px}
+.pass .l,.card{animation:rise .4s ease both}@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:700px){.pass{grid-template-columns:1fr}.pass .r{border-left:0;border-top:2px dashed var(--line)}.pass::before,.pass::after{display:none}.bars .b{grid-template-columns:6.5em minmax(0,1fr) auto}.who{grid-template-columns:minmax(0,1fr) 96px}.who .pv{grid-column:1/-1;text-align:left}}
+@media(max-width:600px){table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute);font-size:13px}.stack td:empty{display:none}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="9" width="30" height="24" rx="5" fill="#ff6a4d"/><rect x="14" y="4" width="12" height="7" rx="3" fill="none" stroke="#eaf6f3" stroke-width="2.5"/><circle cx="12" cy="21" r="3" fill="#eaf6f3"/><rect x="18" y="18" width="12" height="2.5" rx="1.2" fill="#eaf6f3"/><rect x="18" y="23" width="8" height="2.5" rx="1.2" fill="#eaf6f3"/></svg>Family Trip Portal</div>
+    <select id="tripSel" aria-label="Current trip"></select><span class="me"><span id="who" class="small"></span><button class="ghost" data-act="signout">Sign out</button></span>
+  </div>
+  <nav id="nav" aria-label="Sections">
+    <a href="#overview">Overview</a><a href="#expenses">Expenses</a><a href="#budget">Budget</a><a href="#split">Split</a><a href="#receipts">Receipts</a><a href="#trips">All trips</a><a href="#family">Family</a>
+  </nav>
+</header>
+<div id="banner" class="banner" hidden></div>
+<main id="main"><div class="band"><div class="wrap mute">Loading your trips…</div></div></main>
+<dialog id="dlg"><form id="df" novalidate></form></dialog>
+<div id="toast" role="status"></div>
+<script>
+{
+const CATS=[{k:'flights',n:'Flights',c:'#3b82c4'},{k:'hotels',n:'Hotels',c:'#8a63d2'},{k:'parks',n:'Theme parks',c:'#e8833a'},{k:'shopping',n:'Shopping',c:'#d6457a'},{k:'food',n:'Food & drinks',c:'#2f9e6e'},{k:'misc',n:'Misc & fees',c:'#7c8591'}];
+const AVC=['#0e7c78','#ff6a4d','#8a63d2','#3b82c4','#d6457a','#2f9e6e','#e8833a','#7c8591'];
+const VIEWS=['overview','expenses','budget','split','receipts','trips','family'];
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const today=()=>new Date().toISOString().slice(0,10);
+const catOf=k=>CATS.find(c=>c.k===k)||CATS[5];
+const clone=o=>JSON.parse(JSON.stringify(o));
+const S={trips:[],cur:null,ready:false,incl:true,q:'',fcat:'',ro:false};
+let assets=null;S.me=null;S.role=null;S.family=[];S.urls={};
+const ls={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+
+function fmt(v,c){c=(c||'SGD').toUpperCase();try{return new Intl.NumberFormat(undefined,{style:'currency',currency:c}).format(v)}catch{return c+' '+(+v).toFixed(2)}}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+function trip(){return S.trips.find(t=>t.id===S.cur)||S.trips[0]||null}
+function norm(t){t.travellers=t.travellers||[];t.expenses=t.expenses||[];t.budget=t.budget||{};t.cur=(t.cur||'SGD').toUpperCase();return t}
+const rate=e=>num(e.rate)||1;
+const home=e=>num(e.amt)*rate(e);
+const incl=t=>t.expenses.filter(e=>S.incl||e.status!=='planned');
+function shares(e,t){
+  const sp=e.split||{},ids=t.travellers.map(p=>p.id);
+  const who=(sp.who&&sp.who.length?sp.who:ids).filter(id=>ids.includes(id));const out={};if(!who.length)return out;
+  if(sp.mode==='exact')who.forEach(id=>out[id]=num(sp.vals?.[id])*rate(e));
+  else if(sp.mode==='weight'){const w=who.map(id=>{const v=sp.vals?.[id];return v===undefined||v===''?(t.travellers.find(p=>p.id===id)?.w??1):num(v)});const tot=w.reduce((a,b)=>a+b,0)||1;who.forEach((id,i)=>out[id]=home(e)*w[i]/tot)}
+  else who.forEach(id=>out[id]=home(e)/who.length);
+  return out}
+function totals(t){
+  const r={paid:0,planned:0,cat:{}};CATS.forEach(c=>r.cat[c.k]={paid:0,planned:0});
+  t.expenses.forEach(e=>{const h=home(e),k=catOf(e.cat).k;if(e.status==='planned'){r.planned+=h;r.cat[k].planned+=h}else{r.paid+=h;r.cat[k].paid+=h}});
+  r.budget=CATS.reduce((a,c)=>a+num(t.budget[c.k]),0);r.all=r.paid+r.planned;return r}
+function balances(t){
+  const B={};t.travellers.forEach(p=>B[p.id]={paid:0,share:0,cat:{}});
+  incl(t).forEach(e=>{if(B[e.payer])B[e.payer].paid+=home(e);const s=shares(e,t);for(const id in s){B[id].share+=s[id];const k=catOf(e.cat).k;B[id].cat[k]=(B[id].cat[k]||0)+s[id]}});
+  return B}
+function settle(t,B){
+  const cr=[],de=[];t.travellers.forEach(p=>{const b=B[p.id].paid-B[p.id].share;if(b>0.005)cr.push({p,v:b});else if(b<-0.005)de.push({p,v:-b})});
+  cr.sort((a,b)=>b.v-a.v);de.sort((a,b)=>b.v-a.v);const out=[];let i=0,j=0;
+  while(i<de.length&&j<cr.length){const v=Math.min(de[i].v,cr[j].v);out.push({from:de[i].p,to:cr[j].p,v});de[i].v-=v;cr[j].v-=v;if(de[i].v<0.005)i++;if(cr[j].v<0.005)j++}
+  return out}
+const pname=(t,id)=>t.travellers.find(p=>p.id===id)?.name||'—';
+const av=(t,p)=>{const i=t.travellers.indexOf(p);return `<span class="av" style="background:${AVC[(i<0?0:i)%AVC.length]}">${esc((p.name||'?').trim().charAt(0).toUpperCase())}</span>`};
+function days(t){if(!t.start||!t.end)return 0;const d=(new Date(t.end)-new Date(t.start))/864e5+1;return d>0?Math.round(d):0}
+function dateRange(t){if(!t.start)return 'Dates not set';const o={day:'numeric',month:'short',year:'numeric'};const f=s=>new Date(s+'T00:00').toLocaleDateString(undefined,o);return t.end?f(t.start)+' – '+f(t.end):f(t.start)}
+const code=s=>(String(s||'TRIP').replace(/[^A-Za-z]/g,'').slice(0,3)||'TRP').toUpperCase();
+
+/* ---------- persistence (everything goes through our own server) ---------- */
+async function api(method,path,body,form){
+  const opt={method,credentials:'same-origin',headers:{'X-Portal':'1'}};
+  if(form)opt.body=form;else if(body!==undefined){opt.headers['Content-Type']='application/json';opt.body=JSON.stringify(body)}
+  let r;try{r=await fetch(path,opt)}catch{throw new Error('You seem to be offline — check your connection.')}
+  let j=null;try{j=await r.json()}catch{}
+  if(r.status===401&&!path.startsWith('/api/auth')){S.me=null;S.role=null;render()}
+  if(!r.ok)throw new Error(j&&j.error||'Something went wrong — please try again.');
+  return j}
+let chain=Promise.resolve();
+function saveTrip(t){
+  t.updated=Date.now();const i=S.trips.findIndex(x=>x.id===t.id);if(i<0)S.trips.push(t);else S.trips[i]=t;render();
+  const {id,_by,_at,...body}=t;
+  chain=chain.then(()=>api('PUT','/api/trips/'+encodeURIComponent(id),body)).catch(err=>toast(err.message));
+  return chain}
+function removeTrip(id){
+  S.trips=S.trips.filter(t=>t.id!==id);if(S.cur===id)S.cur=S.trips[0]?.id||null;render();
+  chain=chain.then(()=>api('DELETE','/api/trips/'+encodeURIComponent(id))).then(()=>toast('Trip deleted')).catch(err=>{toast(err.message);loadTrips()})}
+let lastSig='';
+async function loadTrips(){
+  let rows;try{rows=await api('GET','/api/trips')}catch(err){if(S.me){banner(err.message);S.ready=true;render()}return}
+  const sig=JSON.stringify(rows);if(sig===lastSig&&S.ready)return;lastSig=sig;
+  S.trips=rows.map(r=>norm({...r.data,id:r.id,_by:r.updated_by,_at:r.updated_at}));
+  if(!S.trips.some(t=>t.id===S.cur))S.cur=S.trips[0]?.id||null;
+  S.ready=true;banner('');if(!dlg.open)render()}
+async function loadFamily(){try{S.family=await api('GET','/api/family')}catch{S.family=[]}if(view()==='family'&&!dlg.open)render()}
+/* receipts live in a private bucket; the server streams them, so no storage links reach the browser */
+assets={
+  async upload(file){file=await shrink(file);if(file.size>4*1048576)throw new Error('That receipt is over 4 MB.');const fd=new FormData();fd.append('file',file);return api('POST','/api/receipts?trip='+encodeURIComponent(trip().id),undefined,fd)},
+  async delete(path){if(path&&path.includes('/'))await api('DELETE','/api/receipts',{path})}};
+/* photos are resized in the browser (max 2000px, JPEG) so uploads stay well under Netlify's 6 MB request limit */
+async function shrink(file){
+  if(!/^image\/(jpeg|png|webp|heic|heif)$/i.test(file.type)||file.size<900*1024)return file;
+  try{const bmp=await createImageBitmap(file);const k=Math.min(1,2000/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.82));if(!blob||blob.size>=file.size)return file;
+    return new File([blob],file.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'})}catch{return file}}
+const rurl=r=>r&&r.id&&r.id.includes('/')?'/api/receipts/'+r.id.split('/').map(encodeURIComponent).join('/'):null;
+function banner(m){const b=$('#banner');if(m){b.textContent=m;b.hidden=false}else b.hidden=true}
+
+/* ---------- render ---------- */
+function view(){const h=location.hash.slice(1);return VIEWS.includes(h)?h:'overview'}
+function render(){
+  const sel=$('#tripSel'),t=trip();
+  sel.innerHTML=S.trips.length?S.trips.map(x=>`<option value="${esc(x.id)}"${t&&x.id===t.id?' selected':''}>${esc(x.name||'Untitled trip')}</option>`).join(''):'<option>No trips yet</option>';
+  sel.disabled=!S.trips.length;
+  const v=view();document.querySelectorAll('#nav a').forEach(a=>a.getAttribute('href')==='#'+v?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
+  const m=$('#main'),locked=!S.me||S.role===null||S.role==='none';
+  document.body.classList.toggle('locked',locked);
+  $('#who').textContent=S.me?S.me:'';
+  if(S.authBusy){m.innerHTML='<div class="band"><div class="wrap mute">Checking your sign-in…</div></div>';return}
+  if(!S.me){m.innerHTML=vLogin();bindLogin();return}
+  if(S.role===null){m.innerHTML='<div class="band"><div class="wrap mute">Checking your family access…</div></div>';return}
+  if(S.role==='none'){m.innerHTML=vNoAccess();return}
+  if(!S.ready){m.innerHTML='<div class="band"><div class="wrap mute">Loading your trips…</div></div>';return}
+  if(v==='family'){m.innerHTML=vFamily();return}
+  if(!t&&v!=='trips'){m.innerHTML=emptyAll();return}
+  m.innerHTML=({overview:vOverview,expenses:vExpenses,budget:vBudget,split:vSplit,receipts:vReceipts,trips:vTrips})[v](t);
+}
+const isAdmin=()=>S.role==='admin';
+
+/* ---------- sign-in screens ---------- */
+const lockArt=`<svg viewBox="0 0 160 120" aria-hidden="true" class="lockart"><rect x="18" y="26" width="124" height="80" rx="14" fill="var(--card)" stroke="var(--line)" stroke-width="2"/><rect x="18" y="26" width="124" height="22" rx="14" fill="#0e4f4c"/><rect x="18" y="38" width="124" height="10" fill="#0e4f4c"/><circle cx="104" cy="26" r="7" fill="var(--bg)"/><circle cx="104" cy="106" r="7" fill="var(--bg)"/><line x1="104" y1="34" x2="104" y2="98" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/><rect x="32" y="60" width="52" height="7" rx="3.5" fill="var(--line)"/><rect x="32" y="74" width="36" height="7" rx="3.5" fill="var(--line)"/><rect x="112" y="64" width="22" height="20" rx="4" fill="#ff6a4d"/><path d="M116 64v-5a7 7 0 0 1 14 0v5" fill="none" stroke="#ff6a4d" stroke-width="3.5"/></svg>`;
+function vLogin(){const mode=S.loginMode||'code',sent=mode==='code'&&S.codeSent;return `<section class="band hero login"><div class="wrap"><div class="pass">
+<div class="l">${lockArt}<h1>Family sign-in</h1><p class="mute">This portal is private. Only family members the admin has added can see trips, budgets and receipts.</p></div>
+<div class="r"><form id="lf" class="lform" novalidate>
+<div class="seg"><label><input type="radio" name="lm" value="code"${mode==='code'?' checked':''}>Email me a code</label><label><input type="radio" name="lm" value="pw"${mode==='pw'?' checked':''}>Password</label></div>
+<label class="f">Email<input id="le" type="email" autocomplete="email" required value="${esc(S.lastEmail||'')}" placeholder="you@example.com"${sent?' readonly':''}></label>
+${sent?`<label class="f">6-digit code<input id="lc" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></label>`:''}
+${mode==='pw'?`<label class="f">Password<input id="lp" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label>`:''}
+<button class="pri" type="submit" id="lgo">${mode==='pw'?'Sign in':sent?'Sign in':'Send me a code'}</button>
+${mode==='pw'?'<button type="button" class="ghost" id="lsignup">First time? Create my password</button>':''}
+${sent?'<button type="button" class="ghost" id="lback">Use a different email</button>':''}
+<p class="note" id="lmsg" ${S.loginMsg?'':'hidden'}>${esc(S.loginMsg||'')}</p>
+<p class="small mute">${mode==='code'?'We’ll email you a one-time code — no password needed.':'Use the email address the family admin added.'}</p>
+</form></div></div></div></section>`}
+function bindLogin(){const f=$('#lf');if(!f)return;
+  f.onchange=ev=>{if(ev.target.name==='lm'){S.loginMode=ev.target.value;S.loginMsg='';S.codeSent=false;S.lastEmail=$('#le').value;render()}};
+  const msg=m=>{S.loginMsg=m;const p=$('#lmsg');p.textContent=m;p.hidden=!m};
+  const go=async signup=>{const email=$('#le').value.trim().toLowerCase();S.lastEmail=email;if(!/^\S+@\S+\.\S+$/.test(email)){msg('Enter a valid email address.');return}
+    const b=$('#lgo');b.disabled=true;
+    try{
+      const mode=S.loginMode||'code';
+      if(mode==='code'&&!S.codeSent){await api('POST','/api/auth/code',{email});S.codeSent=true;S.loginMsg='We’ve emailed you a code. It can take a minute — check spam too.';render();$('#lc')?.focus();return}
+      if(mode==='code'){const r=await api('POST','/api/auth/verify',{email,code:$('#lc').value});S.codeSent=false;S.loginMsg='';await whoAmI();return}
+      const pw=$('#lp').value;if(pw.length<8){msg('Passwords need at least 8 characters.');return}
+      const r=await api('POST','/api/auth/password',{email,password:pw,signup:!!signup});
+      if(r.confirm){msg('Almost done: confirm your email using the link we just sent, then sign in here.');return}
+      S.loginMsg='';await whoAmI();
+    }catch(err){msg(err.message)}finally{const b2=$('#lgo');if(b2)b2.disabled=false}};
+  f.onsubmit=ev=>{ev.preventDefault();go(false)};const su=$('#lsignup');if(su)su.onclick=()=>go(true);
+  const bk=$('#lback');if(bk)bk.onclick=()=>{S.codeSent=false;S.loginMsg='';render()}}
+function vNoAccess(){return `<section class="band"><div class="wrap card empty">${lockArt}<h2>You’re signed in, but not on the family list yet</h2>
+<p class="mute">Ask the family admin to add <b>${esc(S.me)}</b> in the portal’s Family tab, then reload this page.</p><div class="row" style="justify-content:center"><button class="pri" data-act="reload">I’ve been added — reload</button><button data-act="signout">Sign out</button></div></div></section>`}
+/* ---------- family (who can sign in) ---------- */
+function vFamily(){const adm=isAdmin();return `<section class="band"><div class="wrap">
+<div class="row"><h2>Family access</h2><span class="sp mute small">Signed in as ${esc(S.me)} · ${esc(S.role)}</span></div>
+<p class="mute">Only the email addresses below can sign in and see your trips. ${adm?'Admins can add or remove people; members can add trips and expenses but can’t delete trips or change this list.':'Ask an admin to add or remove people.'}</p>
+${adm?`<form id="ff" class="card" style="display:grid;gap:12px;margin-bottom:16px"><h3>Add a family member</h3><div class="f2"><label class="f">Name<input id="fn" placeholder="e.g. Mum"></label><label class="f">Email<input id="fe" type="email" placeholder="name@example.com"></label><label class="f">Role<select id="fr"><option value="member">Member</option><option value="admin">Admin</option></select></label></div><div class="row"><button class="pri" type="submit">Add to family</button><span class="small mute">They sign in with this email — no invite email is sent, so let them know the portal link.</span></div></form>`:''}
+<div class="card" style="padding:6px 10px"><table class="stack"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead><tbody>
+${S.family.map(f=>`<tr><td><b>${esc(f.name||'—')}</b></td><td>${esc(f.email)}</td><td><span class="tag">${f.role==='admin'?'Admin':'Member'}</span></td><td class="num">${adm&&f.email!==S.me?`<button class="ghost dang" data-unfam="${esc(f.email)}">Remove</button>`:f.email===S.me?'<span class="small mute">You</span>':''}</td></tr>`).join('')}
+</tbody></table></div></div></section>`}
+async function addFamily(){const name=$('#fn').value.trim(),email=$('#fe').value.trim().toLowerCase(),role=$('#fr').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter a valid email address.');return}
+  try{await api('POST','/api/family',{email,name,role});toast(`${name||email} can now sign in`);loadFamily()}catch(err){toast(err.message)}}
+async function removeFamily(email){try{await api('DELETE','/api/family/'+encodeURIComponent(email));toast('Removed from family access');loadFamily()}catch(err){toast(err.message)}}
+
+/* ---------- import trips (JSON) ---------- */
+async function importTrips(file){try{const arr=JSON.parse(await file.text());const list=Array.isArray(arr)?arr:[arr];let n=0;
+  for(const raw of list){if(!raw||typeof raw!=='object')continue;const t=norm(clone(raw));t.id=String(t.id||uid()).replace(/[^\w-]/g,'').slice(0,60)||uid();
+    t.expenses.forEach(e=>{if(e.receipt&&!String(e.receipt.id||'').includes('/'))e.receipt=null});delete t._by;delete t._at;
+    const {id,...body}=t;await api('PUT','/api/trips/'+encodeURIComponent(id),body);n++}
+  toast(`Imported ${n} trip${n===1?'':'s'}`);loadTrips()}catch(err){toast('Import failed: '+err.message)}}
+function emptyAll(){return `<div class="band"><div class="wrap card empty">
+<svg viewBox="0 0 120 120" aria-hidden="true"><rect x="22" y="34" width="76" height="62" rx="12" fill="#ff6a4d"/><rect x="45" y="20" width="30" height="18" rx="7" fill="none" stroke="currentColor" stroke-width="5"/><rect x="34" y="52" width="52" height="6" rx="3" fill="#fff"/><rect x="34" y="66" width="34" height="6" rx="3" fill="#fff"/><circle cx="38" cy="100" r="6" fill="currentColor"/><circle cx="82" cy="100" r="6" fill="currentColor"/></svg>
+<h2>Plan your first family trip</h2><p class="mute">Set up the travellers and budget, then log flights, hotels, park tickets and every receipt along the way.</p>
+<button class="pri" data-act="newtrip">Create a trip</button></div></div>`}
+
+function vOverview(t){
+  const T=totals(t),c=t.cur,pax=t.travellers.length||1,d=days(t),over=T.budget&&T.all>T.budget;
+  const pct=x=>T.budget?Math.min(100,x/T.budget*100):0;
+  const strip=CATS.map(k=>{const v=T.cat[k.k].paid+T.cat[k.k].planned;return v?`<i style="width:${v/(T.all||1)*100}%;background:${k.c}" title="${esc(k.n)}"></i>`:''}).join('');
+  const recent=[...t.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,6);
+  const B=balances(t);
+  return `<section class="band hero"><div class="wrap"><div class="pass">
+<div class="l"><div class="lbl">Family trip · ${esc(t.travellers.length)} pax</div><h1>${esc(t.name||'Untitled trip')}</h1>
+<div class="route"><span class="code">HOME</span><span class="line"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></span><span class="code">${esc(code(t.dest))}</span></div>
+<div class="facts"><div><span class="lbl">Destination</span><b>${esc(t.dest||'—')}</b></div><div><span class="lbl">Dates</span><b>${esc(dateRange(t))}</b></div><div><span class="lbl">Days</span><b>${d||'—'}</b></div><div><span class="lbl">Currency</span><b>${esc(c)}</b></div></div>
+<div class="strip">${strip}</div><div class="legend">${CATS.map(k=>`<span><span class="dot" style="background:${k.c}"></span>${esc(k.n)}</span>`).join('')}</div></div>
+<div class="r"><div class="lbl">Total trip cost (paid + planned)</div><div class="big">${esc(fmt(T.all,c))}</div>
+<div class="meter" role="img" aria-label="Budget used"><i style="width:${pct(T.paid)}%;background:var(--acc)"></i><i style="width:${Math.max(0,pct(T.all)-pct(T.paid))}%;background:var(--acc);opacity:.4"></i></div>
+<div class="small ${over?'neg':'mute'}">${T.budget?(over?`Over budget by ${esc(fmt(T.all-T.budget,c))}`:`${esc(fmt(T.budget-T.all,c))} left of ${esc(fmt(T.budget,c))} budget`):'No budget set yet'}</div>
+<div class="facts" style="margin-top:16px"><div><span class="lbl">Paid</span><b>${esc(fmt(T.paid,c))}</b></div><div><span class="lbl">Planned</span><b>${esc(fmt(T.planned,c))}</b></div><div><span class="lbl">Per person</span><b>${esc(fmt(T.all/pax,c))}</b></div>${d?`<div><span class="lbl">Per day</span><b>${esc(fmt(T.all/d,c))}</b></div>`:''}</div>
+<div class="row" style="margin-top:18px"><button class="pri" data-act="add">+ Add expense</button><button data-act="edittrip">Edit trip</button></div></div>
+</div></div></section>
+<section class="band"><div class="wrap grid">
+<div class="card"><div class="row"><h3>Spending by category</h3><a class="sp small" href="#budget">Budget →</a></div><div class="bars">${CATS.map(k=>{const p=T.cat[k.k].paid,pl=T.cat[k.k].planned,b=num(t.budget[k.k]),mx=Math.max(b,p+pl,1);return `<div class="b"><span class="small">${esc(k.n)}</span><span class="t"><i class="pl" style="width:${(p+pl)/mx*100}%;background:${k.c}"></i><i style="width:${p/mx*100}%;background:${k.c}"></i>${b?`<u style="left:calc(${b/mx*100}% - 1px)"></u>`:''}</span><span class="num small">${esc(fmt(p+pl,c))}</span></div>`}).join('')}</div><p class="small mute">Solid = paid, faded = planned, black tick = budget.</p></div>
+<div class="card"><div class="row"><h3>Who owes what</h3><a class="sp small" href="#split">Split →</a></div><button class="ghost small" data-act="travellers" style="min-height:38px;margin:6px 0">Add or remove family members</button>${t.travellers.length?t.travellers.map(p=>{const b=B[p.id].paid-B[p.id].share;return `<div class="person" style="padding:8px 0">${av(t,p)}<b>${esc(p.name)}</b><span class="small ${b>0.005?'pos':b<-0.005?'neg':'mute'}">${b>0.005?'gets back '+esc(fmt(b,c)):b<-0.005?'owes '+esc(fmt(-b,c)):'settled'} · share ${esc(fmt(B[p.id].share,c))}</span></div>`}).join(''):'<p class="mute">Add travellers in Edit trip.</p>'}</div>
+<div class="card"><div class="row"><h3>Latest expenses</h3><a class="sp small" href="#expenses">All →</a></div>${recent.length?`<table><tbody>${recent.map(e=>`<tr data-edit="${esc(e.id)}" style="cursor:pointer"><td><span class="dot" style="background:${catOf(e.cat).c}"></span>${esc(e.desc)}<div class="small mute">${esc(e.date||'')}${e.status==='planned'?' · planned':''}</div></td><td class="num">${esc(fmt(home(e),c))}</td></tr>`).join('')}</tbody></table>`:'<p class="mute">Nothing logged yet.</p>'}</div>
+</div></section>`}
+
+function vExpenses(t){
+  const c=t.cur,q=S.q.toLowerCase();
+  const list=[...t.expenses].filter(e=>(!S.fcat||catOf(e.cat).k===S.fcat)&&(!q||(e.desc+' '+(e.ref||'')+' '+(e.note||'')).toLowerCase().includes(q))).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const sum=list.reduce((a,e)=>a+home(e),0);
+  return `<section class="band"><div class="wrap">
+<div class="row"><h2>Expenses</h2><span class="sp"></span><button data-act="csv">Export CSV</button><button class="pri" data-act="add">+ Add expense</button></div>
+<div class="row" style="margin:16px 0 10px"><input id="q" type="search" placeholder="Search description, booking ref, notes" value="${esc(S.q)}" style="max-width:420px"></div>
+<div class="chips" role="group" aria-label="Filter by category"><button data-fcat="" aria-pressed="${!S.fcat}">All</button>${CATS.map(k=>`<button data-fcat="${k.k}" aria-pressed="${S.fcat===k.k}"><span class="dot" style="background:${k.c}"></span>${esc(k.n)}</button>`).join('')}</div>
+<div class="card" style="margin-top:12px;padding:6px 10px">${list.length?`<table class="stack"><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Paid by</th><th>Split</th><th>Status</th><th class="num">Amount</th><th class="num">${esc(c)}</th></tr></thead><tbody>
+${list.map(e=>{const sp=e.split||{},n=(sp.who||[]).length||t.travellers.length;return `<tr data-edit="${esc(e.id)}" style="cursor:pointer"><td>${esc(e.date||'')}</td><td><b>${esc(e.desc)}</b>${e.ref?`<div class="small mute">Ref ${esc(e.ref)}</div>`:''}${e.receipt?' <span class="tag">Receipt</span>':''}</td><td><span class="dot" style="background:${catOf(e.cat).c}"></span>${esc(catOf(e.cat).n)}</td><td>${esc(pname(t,e.payer))}</td><td class="small">${n} pax · ${esc(sp.mode==='exact'?'exact':sp.mode==='weight'?'shares':'equal')}</td><td><span class="tag ${e.status==='planned'?'pl':''}">${e.status==='planned'?'Planned':'Paid'}</span></td><td class="num">${esc(fmt(num(e.amt),e.cur||c))}</td><td class="num"><b>${esc(fmt(home(e),c))}</b></td></tr>`}).join('')}
+</tbody></table><div class="row" style="padding:12px 10px"><span class="mute">${list.length} item${list.length>1?'s':''}</span><b class="sp num">${esc(fmt(sum,c))}</b></div>`:`<div class="empty"><p class="mute">${t.expenses.length?'No expenses match this filter.':'No expenses yet — add flights, hotels, tickets or a quick snack.'}</p><button class="pri" data-act="add">+ Add expense</button></div>`}</div>
+</div></section>`}
+
+function vBudget(t){
+  const T=totals(t),c=t.cur,pax=t.travellers.length||1;
+  return `<section class="band"><div class="wrap">
+<div class="row"><h2>Budget planner</h2><span class="sp mute small">All figures in ${esc(c)}</span></div>
+<p class="mute">Set a budget per category. Planned costs (booked but unpaid, or estimates) count against it so you see the full picture before you fly.</p>
+<div class="card scroll" style="padding:6px 10px"><table class="stack"><thead><tr><th>Category</th><th>Budget</th><th class="num">Paid</th><th class="num">Planned</th><th class="num">Remaining</th><th style="width:22%">Used</th></tr></thead><tbody>
+${CATS.map(k=>{const b=num(t.budget[k.k]),u=T.cat[k.k].paid+T.cat[k.k].planned,rem=b-u;return `<tr><td><span class="dot" style="background:${k.c}"></span><b>${esc(k.n)}</b></td><td><input type="number" inputmode="decimal" min="0" step="any" data-bud="${k.k}" value="${b||''}" placeholder="0" style="max-width:150px"></td><td class="num">${esc(fmt(T.cat[k.k].paid,c))}</td><td class="num">${esc(fmt(T.cat[k.k].planned,c))}</td><td class="num ${b&&rem<0?'neg':''}">${b?esc(fmt(rem,c)):'—'}</td><td><div class="meter" style="margin:0"><i style="width:${b?Math.min(100,u/b*100):0}%;background:${b&&rem<0?'var(--warn)':k.c}"></i></div></td></tr>`}).join('')}
+<tr><td><b>Total</b></td><td><b>${esc(fmt(T.budget,c))}</b></td><td class="num"><b>${esc(fmt(T.paid,c))}</b></td><td class="num"><b>${esc(fmt(T.planned,c))}</b></td><td class="num ${T.budget&&T.budget<T.all?'neg':''}"><b>${T.budget?esc(fmt(T.budget-T.all,c)):'—'}</b></td><td></td></tr>
+</tbody></table></div>
+<div class="grid" style="margin-top:16px"><div class="card"><span class="lbl">Budget per person</span><div class="big" style="font-size:34px">${esc(fmt(T.budget/pax,c))}</div><span class="small mute">${pax} traveller${pax>1?'s':''}, split evenly</span></div>
+<div class="card"><span class="lbl">Budget per day</span><div class="big" style="font-size:34px">${days(t)?esc(fmt(T.budget/days(t),c)):'—'}</div><span class="small mute">${days(t)?days(t)+' days':'Set trip dates to see this'}</span></div>
+<div class="card"><span class="lbl">Projected vs budget</span><div class="big ${T.budget&&T.all>T.budget?'neg':'pos'}" style="font-size:34px">${T.budget?Math.round(T.all/T.budget*100)+'%':'—'}</div><span class="small mute">Paid + planned as a share of budget</span></div></div>
+</div></section>`}
+
+function vSplit(t){
+  const c=t.cur;if(!t.travellers.length)return `<section class="band"><div class="wrap card empty"><p class="mute">Add travellers to split costs.</p><button class="pri" data-act="edittrip">Edit travellers</button></div></section>`;
+  const B=balances(t),st=settle(t,B),tot=incl(t).reduce((a,e)=>a+home(e),0);
+  return `<section class="band"><div class="wrap">
+<div class="row"><h2>Split the bill</h2><span class="sp"></span><button data-act="travellers">Family members</button><label class="row small" style="gap:8px"><input type="checkbox" id="incl" ${S.incl?'checked':''} style="width:22px;min-height:0;accent-color:var(--acc)"> Include planned costs</label></div>
+<p class="mute">Each expense is split among the travellers ticked on it — equally, by shares (e.g. child = 0.5) or by exact amounts. Total being split: <b>${esc(fmt(tot,c))}</b> · even split would be <b>${esc(fmt(tot/t.travellers.length,c))}</b> each.</p>
+<div class="grid">${t.travellers.map(p=>{const b=B[p.id],bal=b.paid-b.share;return `<div class="card"><div class="person">${av(t,p)}<h3>${esc(p.name)}</h3><span class="small mute">${esc(p.kind||'Adult')}${(p.w??1)!=1?' · share weight '+esc(p.w):''}</span></div>
+<div class="facts" style="margin-top:14px"><div><span class="lbl">Their share</span><b>${esc(fmt(b.share,c))}</b></div><div><span class="lbl">They paid</span><b>${esc(fmt(b.paid,c))}</b></div></div>
+<div class="bal ${bal>0.005?'pos':bal<-0.005?'neg':''}" style="margin-top:10px">${bal>0.005?'+'+esc(fmt(bal,c)):bal<-0.005?'−'+esc(fmt(-bal,c)):'Settled'}</div><span class="small mute">${bal>0.005?'to receive':bal<-0.005?'to pay':''}</span></div>`}).join('')}</div>
+<div class="grid" style="margin-top:16px"><div class="card"><h3>Settle up</h3>${st.length?`<ul class="settle">${st.map(s=>`<li><b>${esc(s.from.name)}</b> pays <b>${esc(s.to.name)}</b> <span class="num" style="float:right"><b>${esc(fmt(s.v,c))}</b></span></li>`).join('')}</ul><p class="small mute">Fewest transfers to square everyone up.</p>`:'<p class="mute">Everyone is square.</p>'}</div>
+<div class="card scroll" style="grid-column:span 2;min-width:min(100%,520px)"><h3>Share by category</h3><table><thead><tr><th>Category</th>${t.travellers.map(p=>`<th class="num">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>${CATS.map(k=>`<tr><td><span class="dot" style="background:${k.c}"></span>${esc(k.n)}</td>${t.travellers.map(p=>`<td class="num">${esc(fmt(B[p.id].cat[k.k]||0,c))}</td>`).join('')}</tr>`).join('')}<tr><td><b>Total</b></td>${t.travellers.map(p=>`<td class="num"><b>${esc(fmt(B[p.id].share,c))}</b></td>`).join('')}</tr></tbody></table></div></div>
+</div></section>`}
+
+function vReceipts(t){
+  const c=t.cur,withR=t.expenses.filter(e=>e.receipt),miss=t.expenses.filter(e=>!e.receipt&&e.status!=='planned');
+  return `<section class="band"><div class="wrap">
+<div class="row"><h2>Receipts</h2><span class="sp mute small">${withR.length} filed · ${miss.length} missing</span></div>
+${withR.length?`<div class="rgrid" style="margin-top:14px">${withR.map(e=>{const r=e.receipt,u=rurl(r),img=/^image\//.test(r.type||'');return `<a class="rc" ${u?`href="${esc(u)}" target="_blank" rel="noopener"`:''}><div class="th">${!r.id.includes('/')?'<span class="small mute" style="padding:10px;text-align:center">Saved in the old portal</span>':!u?'':img?`<img src="${esc(u)}" alt="Receipt for ${esc(e.desc)}" loading="lazy">`:'<b>PDF</b>'}</div><div class="c"><b>${esc(e.desc)}</b><div class="mute">${esc(e.date||'')} · ${esc(fmt(home(e),c))}</div></div></a>`}).join('')}</div>`:'<p class="mute">No receipts uploaded yet. Open any expense and attach a photo or PDF.</p>'}
+${miss.length?`<h3 style="margin-top:26px">Paid but no receipt</h3><div class="card" style="margin-top:10px;padding:6px 10px"><table><tbody>${miss.map(e=>`<tr><td><b>${esc(e.desc)}</b><div class="small mute">${esc(e.date||'')} · ${esc(catOf(e.cat).n)}${e.ref?' · Ref '+esc(e.ref):''}</div></td><td class="num">${esc(fmt(home(e),c))}</td><td class="num"><button data-edit="${esc(e.id)}">Attach</button></td></tr>`).join('')}</tbody></table></div>`:''}
+</div></section>`}
+
+function vTrips(){
+  return `<section class="band"><div class="wrap">
+<div class="row"><h2>All trips</h2><span class="sp"></span><button class="pri" data-act="newtrip">+ New trip</button></div>
+<p class="mute">Reuse a past trip as a template — it copies travellers, currency and budgets, but not the expenses.</p>
+<div class="row" style="margin-bottom:16px"><button data-act="exportall">Back up all trips (JSON)</button><label class="btn" style="cursor:pointer">Import trips (JSON)<input type="file" id="imp" accept="application/json,.json" hidden></label></div>
+${S.trips.length?`<div class="grid">${[...S.trips].sort((a,b)=>(b.start||'').localeCompare(a.start||'')).map(x=>{const T=totals(x);return `<div class="card"><div class="lbl">${esc(dateRange(x))}</div><h3 style="font-size:24px;margin:4px 0">${esc(x.name||'Untitled trip')}</h3><div class="mute small">${esc(x.dest||'')} · ${x.travellers.length} pax · ${x.expenses.length} expenses</div>
+<div class="facts" style="margin:12px 0"><div><span class="lbl">Total</span><b>${esc(fmt(T.all,x.cur))}</b></div><div><span class="lbl">Budget</span><b>${T.budget?esc(fmt(T.budget,x.cur)):'—'}</b></div></div>
+<div class="row"><button class="pri" data-open="${esc(x.id)}">Open</button><button data-dup="${esc(x.id)}">Use as template</button>${isAdmin()?`<button class="ghost dang" data-del="${esc(x.id)}">Delete</button>`:''}</div>${x._by?`<div class="small mute" style="margin-top:8px">Last edited by ${esc(x._by)}</div>`:''}</div>`}).join('')}</div>`:'<p class="mute">No trips yet.</p>'}
+</div></section>`}
+
+/* ---------- dialogs ---------- */
+const dlg=$('#dlg'),df=$('#df');
+function openDlg(html,onSubmit,bind){df.innerHTML=html;df.onsubmit=ev=>{ev.preventDefault();onSubmit()};bind&&bind();try{dlg.showModal()}catch{dlg.setAttribute('open','')}}
+function closeDlg(){try{dlg.close()}catch{dlg.removeAttribute('open')}}
+
+function tripForm(t0,isNew){
+  const t=clone(t0);
+  const travRows=()=>t.travellers.map((p,i)=>`<div class="who" data-i="${i}"><input aria-label="Name" data-tn="${i}" value="${esc(p.name)}" placeholder="Name"><select aria-label="Type" data-tk="${i}">${['Adult','Child','Senior','Infant'].map(k=>`<option${p.kind===k?' selected':''}>${k}</option>`).join('')}</select><button type="button" class="ghost dang" data-tr="${i}" aria-label="Remove traveller">Remove</button><label class="f small pv" style="grid-column:1/-1;display:flex;gap:8px;align-items:center;font-weight:500">Share weight <input type="number" step="any" min="0" data-tw="${i}" value="${esc(p.w??1)}" style="max-width:100px"><span class="mute">1 = full share, 0.5 = half (e.g. a child)</span></label></div>`).join('');
+  openDlg(`<div class="row"><h2>${isNew?'New trip':'Edit trip'}</h2><button type="button" class="sp ghost" data-x>Close</button></div>
+<label class="f">Trip name<input id="tn" required value="${esc(t.name||'')}" placeholder="e.g. Tokyo & Disney 2027"></label>
+<div class="f2"><label class="f">Destination<input id="td" value="${esc(t.dest||'')}" placeholder="City, country"></label><label class="f">Home currency<input id="tc" maxlength="3" value="${esc(t.cur||'SGD')}" style="text-transform:uppercase"></label></div>
+<div class="f2"><label class="f">Start date<input id="ts" type="date" value="${esc(t.start||'')}"></label><label class="f">End date<input id="te" type="date" value="${esc(t.end||'')}"></label></div>
+<div id="travSec"><div class="row"><h3>Travellers (pax)</h3><button type="button" class="sp" id="addTr">+ Add traveller</button></div><div id="trs">${travRows()}</div>${t.expenses.length?'<p class="small mute" style="margin:6px 0 0">New travellers are only included in expenses you add or edit from now on. A removed traveller is taken out of every split, and the others’ shares go up to cover it.</p>':''}</div>
+<div class="row"><button type="submit" class="pri">${isNew?'Create trip':'Save changes'}</button><button type="button" class="ghost" data-x>Cancel</button></div>`,
+  ()=>{sync();t.name=$('#tn').value.trim()||'Untitled trip';t.dest=$('#td').value.trim();t.cur=($('#tc').value.trim()||'SGD').toUpperCase();t.start=$('#ts').value;t.end=$('#te').value;
+    t.travellers=t.travellers.filter(p=>p.name.trim());if(!t.travellers.length){toast('Add at least one traveller.');return}
+    S.cur=t.id;ls.set('ftp-cur',t.id);saveTrip(norm(t));closeDlg();toast(isNew?'Trip created':'Trip saved');if(isNew)location.hash='overview'},
+  bindT);
+  function sync(){df.querySelectorAll('[data-tn]').forEach(el=>t.travellers[+el.dataset.tn].name=el.value);df.querySelectorAll('[data-tk]').forEach(el=>t.travellers[+el.dataset.tk].kind=el.value);df.querySelectorAll('[data-tw]').forEach(el=>t.travellers[+el.dataset.tw].w=num(el.value))}
+  function bindT(){$('#addTr').onclick=()=>{sync();t.travellers.push({id:uid(),name:'',kind:'Adult',w:1});$('#trs').innerHTML=travRows();df.querySelector(`[data-tn="${t.travellers.length-1}"]`).focus()};
+    $('#trs').onclick=ev=>{const b=ev.target.closest('[data-tr]');if(!b)return;sync();const p=t.travellers[+b.dataset.tr],n=t.expenses.filter(e=>e.payer===p.id).length;
+      if(n){toast(`${p.name||'This traveller'} paid for ${n} expense${n>1?'s':''}. Change “Paid by” on ${n>1?'those':'that'} first.`);return}
+      if(t.travellers.length<=1){toast('A trip needs at least one traveller.');return}
+      t.travellers.splice(+b.dataset.tr,1);$('#trs').innerHTML=travRows()};
+    $('#trs').onchange=ev=>{const k=ev.target.closest('[data-tk]');if(k){const w=df.querySelector(`[data-tw="${k.dataset.tk}"]`);if(w&&num(w.value)===1&&k.value==='Child')w.value=0.5;if(w&&k.value==='Infant'&&num(w.value)===1)w.value=0}}}
+}
+function newTrip(tpl){
+  const t=tpl?{...clone(tpl),id:uid(),name:'Copy of '+(tpl.name||'trip'),start:'',end:'',expenses:[]}:{id:uid(),name:'',dest:'',cur:'SGD',start:'',end:'',travellers:[{id:uid(),name:'',kind:'Adult',w:1},{id:uid(),name:'',kind:'Adult',w:1}],budget:{},expenses:[]};
+  tripForm(t,true)}
+
+function expenseForm(id){
+  const t=trip();if(!t)return;if(!t.travellers.length){toast('Add travellers first.');tripForm(t,false);return}
+  const e0=id?t.expenses.find(x=>x.id===id):null;
+  const e=e0?clone(e0):{id:uid(),date:today(),cat:S.fcat||'food',desc:'',amt:'',cur:t.cur,rate:1,status:'paid',payer:t.travellers[0].id,split:{mode:'equal',who:t.travellers.map(p=>p.id),vals:{}},ref:'',note:'',receipt:null};
+  e.split=e.split||{mode:'equal',who:[],vals:{}};e.split.vals=e.split.vals||{};if(!e.split.who||!e.split.who.length)e.split.who=t.travellers.map(p=>p.id);
+  let file=null,dropR=false,delArm=false;
+  openDlg(`<div class="row"><h2>${e0?'Edit expense':'Add expense'}</h2><button type="button" class="sp ghost" data-x>Close</button></div>
+<label class="f">What was it?<input id="xd" value="${esc(e.desc)}" placeholder="e.g. Return flights SIN–NRT" required></label>
+<div class="f2"><label class="f">Category<select id="xc">${CATS.map(k=>`<option value="${k.k}"${catOf(e.cat).k===k.k?' selected':''}>${esc(k.n)}</option>`).join('')}</select></label><label class="f">Date<input id="xdt" type="date" value="${esc(e.date||'')}"></label></div>
+<div class="f2"><label class="f">Amount<input id="xa" type="number" inputmode="decimal" step="any" min="0" value="${esc(e.amt)}" placeholder="0.00"></label><label class="f">Currency<input id="xcu" maxlength="3" value="${esc(e.cur||t.cur)}" style="text-transform:uppercase"></label></div>
+<label class="f" id="rateRow">Exchange rate<input id="xr" type="number" step="any" min="0" value="${esc(e.rate||1)}"><span class="small mute" id="rateHint"></span></label>
+<div class="f2"><label class="f">Status<div class="seg"><label><input type="radio" name="st" value="paid"${e.status!=='planned'?' checked':''}>Paid</label><label><input type="radio" name="st" value="planned"${e.status==='planned'?' checked':''}>Planned</label></div></label><label class="f">Paid by<select id="xp">${t.travellers.map(p=>`<option value="${esc(p.id)}"${e.payer===p.id?' selected':''}>${esc(p.name)}</option>`).join('')}</select></label></div>
+<div><div class="row"><h3>Split between</h3></div><div class="seg" style="margin:8px 0">${[['equal','Equally'],['weight','By shares'],['exact','Exact amounts']].map(([v,n])=>`<label><input type="radio" name="sm" value="${v}"${(e.split.mode||'equal')===v?' checked':''}>${n}</label>`).join('')}</div>
+<div id="who">${t.travellers.map(p=>`<div class="who"><label><input type="checkbox" data-w="${esc(p.id)}"${e.split.who.includes(p.id)?' checked':''}>${esc(p.name)}</label><input type="number" step="any" min="0" data-v="${esc(p.id)}" aria-label="Value for ${esc(p.name)}" value="${esc(e.split.vals[p.id]??'')}" placeholder="${esc(p.w??1)}"><span class="num small pv" data-pv="${esc(p.id)}"></span></div>`).join('')}</div>
+<div class="note" id="splitHint"></div></div>
+<div class="f2"><label class="f">Booking ref / receipt no.<input id="xref" value="${esc(e.ref||'')}" placeholder="Optional"></label><label class="f">Notes<input id="xn" value="${esc(e.note||'')}" placeholder="Optional"></label></div>
+<div><h3>Receipt</h3><div id="rcpt" style="margin-top:8px"></div></div>
+<div class="row"><button type="submit" class="pri" id="xsave">${e0?'Save':'Add expense'}</button><button type="button" class="ghost" data-x>Cancel</button>${e0?'<button type="button" class="sp ghost dang" id="xdel">Delete</button>':''}</div>`,
+  async()=>{
+    const amt=num($('#xa').value),desc=$('#xd').value.trim();if(!desc){toast('Add a description.');$('#xd').focus();return}if(!(amt>0)){toast('Enter an amount above 0.');$('#xa').focus();return}
+    read();if(!e.split.who.length){toast('Tick at least one traveller.');return}
+    const btn=$('#xsave');btn.disabled=true;
+    if(dropR&&e0&&e0.receipt&&assets){try{await assets.delete(e0.receipt.id)}catch{}e.receipt=null}
+    if(file){if(!assets){toast('Uploads need edit access.');btn.disabled=false;return}btn.textContent='Uploading…';
+      try{const r=await assets.upload(file);if(e0&&e0.receipt&&!dropR){try{await assets.delete(e0.receipt.id)}catch{}}e.receipt={id:r.id,type:r.contentType||file.type,name:file.name}}catch{toast('Receipt upload failed.');btn.disabled=false;btn.textContent='Save';return}}
+    const T=clone(trip());const i=T.expenses.findIndex(x=>x.id===e.id);if(i<0)T.expenses.push(e);else T.expenses[i]=e;
+    saveTrip(norm(T));closeDlg();toast(e0?'Expense saved':'Expense added')},
+  ()=>{df.oninput=df.onchange=()=>{read();upd()};upd();drawR();
+    const d=$('#xdel');if(d)d.onclick=async()=>{if(!delArm){delArm=true;d.textContent='Tap again to delete';return}
+      const T=clone(trip());T.expenses=T.expenses.filter(x=>x.id!==e.id);if(e0.receipt&&assets){try{await assets.delete(e0.receipt.id)}catch{}}saveTrip(T);closeDlg();toast('Expense deleted')}});
+  function read(){e.desc=$('#xd').value.trim();e.cat=$('#xc').value;e.date=$('#xdt').value;e.amt=num($('#xa').value);e.cur=($('#xcu').value.trim()||t.cur).toUpperCase();e.rate=e.cur===t.cur?1:num($('#xr').value)||1;
+    e.status=df.querySelector('[name=st]:checked').value;e.payer=$('#xp').value;e.split.mode=df.querySelector('[name=sm]:checked').value;
+    e.split.who=[...df.querySelectorAll('[data-w]')].filter(x=>x.checked).map(x=>x.dataset.w);e.split.vals={};df.querySelectorAll('[data-v]').forEach(x=>{if(x.value!=='')e.split.vals[x.dataset.v]=num(x.value)});
+    e.ref=$('#xref').value.trim();e.note=$('#xn').value.trim()}
+  function upd(){const same=e.cur===t.cur;$('#rateRow').hidden=same;$('#rateHint').textContent=same?'':`1 ${e.cur} = ${e.rate} ${t.cur} → ${fmt(home(e),t.cur)}`;
+    const m=e.split.mode;df.querySelectorAll('[data-v]').forEach(x=>{x.style.visibility=m==='equal'?'hidden':'visible';x.disabled=!e.split.who.includes(x.dataset.v);x.placeholder=m==='exact'?'0.00':String(t.travellers.find(p=>p.id===x.dataset.v)?.w??1)});
+    const s=shares(e,t);df.querySelectorAll('[data-pv]').forEach(x=>x.textContent=s[x.dataset.pv]!==undefined?fmt(s[x.dataset.pv],t.cur):'—');
+    let h=`${e.split.who.length} of ${t.travellers.length} travellers · total ${esc(fmt(home(e),t.cur))}`;
+    if(m==='exact'){const sum=e.split.who.reduce((a,id)=>a+num(e.split.vals[id]),0),diff=num(e.amt)-sum;h+=Math.abs(diff)>0.005?` · <b class="neg">${diff>0?esc(fmt(diff,e.cur))+' not yet assigned':esc(fmt(-diff,e.cur))+' over the amount'}</b>`:' · amounts add up ✓'}
+    if(m==='weight')h+=' · leave a box blank to use that traveller’s default weight';
+    $('#splitHint').innerHTML=h}
+  function drawR(){const box=$('#rcpt'),r=e0&&e0.receipt&&!dropR?e0.receipt:null;
+    box.innerHTML=(r?`<div class="row note"><a href="${esc(rurl(r)||'#')}" target="_blank" rel="noopener">${esc(r.name||'View receipt')}</a><button type="button" class="sp ghost dang" id="rdrop">Remove</button></div>`:'')+
+      (assets?`<label class="f" style="margin-top:8px">${r?'Replace with':'Attach photo or PDF'}<input type="file" id="rf" accept="image/*,application/pdf"></label>${file?`<div class="small mute">Ready to upload: ${esc(file.name)}</div>`:''}`:'<p class="small mute">Receipt uploads need edit access; use the booking ref field instead.</p>');
+    const rd=$('#rdrop');if(rd)rd.onclick=()=>{dropR=true;drawR()};const rf=$('#rf');if(rf)rf.onchange=()=>{file=rf.files[0]||null;if(file&&!/^image\//.test(file.type)&&file.size>4*1048576){toast('PDF receipts can be up to 4 MB — try a photo instead.');file=null}drawR()}}
+}
+
+/* ---------- CSV ---------- */
+function csv(t){const q=v=>{const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  const head=['Date','Description','Category','Status','Paid by','Amount','Currency','Rate','Amount '+t.cur,'Ref','Notes',...t.travellers.map(p=>'Share '+p.name)];
+  const rows=t.expenses.map(e=>{const s=shares(e,t);return [e.date,e.desc,catOf(e.cat).n,e.status||'paid',pname(t,e.payer),num(e.amt).toFixed(2),e.cur,rate(e),home(e).toFixed(2),e.ref,e.note,...t.travellers.map(p=>(s[p.id]||0).toFixed(2))]});
+  return [head,...rows].map(r=>r.map(q).join(',')).join('\n')}
+async function exportCsv(){const t=trip();if(!t)return;const data=csv(t),fn=(t.name||'trip').replace(/[^\w-]+/g,'_')+'_expenses.csv';
+  downloadFile(fn,'﻿'+data,'text/csv')}
+function downloadFile(fn,data,type){const u=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+
+/* ---------- events ---------- */
+document.addEventListener('click',ev=>{
+  const a=ev.target.closest('[data-act],[data-edit],[data-open],[data-dup],[data-del],[data-fcat],[data-x],[data-unfam]');if(!a)return;
+  if(a.dataset.act==='signout'){api('POST','/api/auth/logout').catch(()=>{}).then(()=>{S.me=null;S.role=null;S.trips=[];S.ready=false;lastSig='';render()});return}if(a.dataset.act==='reload'){location.reload();return}
+  if(a.dataset.act==='exportall'){downloadFile('family-trips-backup-'+today()+'.json',JSON.stringify(S.trips.map(({_by,_at,...t})=>t),null,1),'application/json');return}
+  if(a.dataset.unfam){if(a.dataset.armed)removeFamily(a.dataset.unfam);else{a.dataset.armed='1';a.textContent='Tap again to remove'}return}
+  if(a.hasAttribute('data-x')){closeDlg();return}
+  if(S.ro&&!a.dataset.open&&a.dataset.fcat===undefined&&a.dataset.act!=='csv'){toast('View-only access');return}
+  const t=trip(),act=a.dataset.act;
+  if(act==='add')expenseForm();else if(act==='newtrip')newTrip();else if(act==='edittrip'&&t)tripForm(t,false);else if(act==='travellers'&&t){tripForm(t,false);setTimeout(()=>{const s=$('#travSec');if(s)s.scrollIntoView({block:'start'})},60)}else if(act==='csv')exportCsv();
+  else if(a.dataset.edit)expenseForm(a.dataset.edit);
+  else if(a.dataset.open){S.cur=a.dataset.open;ls.set('ftp-cur',S.cur);location.hash='overview';render()}
+  else if(a.dataset.dup){const x=S.trips.find(y=>y.id===a.dataset.dup);if(x)newTrip(x)}
+  else if(a.dataset.del){if(a.dataset.armed){removeTrip(a.dataset.del);toast('Trip deleted')}else{a.dataset.armed='1';a.textContent='Tap again to delete'}}
+  else if(a.dataset.fcat!==undefined){S.fcat=a.dataset.fcat;render()}
+});
+document.addEventListener('input',ev=>{if(ev.target.id==='q'){S.q=ev.target.value;const p=ev.target.selectionStart;render();const q=$('#q');q.focus();try{q.setSelectionRange(p,p)}catch{}}});
+document.addEventListener('change',ev=>{const el=ev.target;
+  if(el.id==='imp'&&el.files[0]){importTrips(el.files[0]);el.value=''}
+  else if(el.id==='tripSel'){S.cur=el.value;ls.set('ftp-cur',S.cur);render()}
+  else if(el.id==='incl'){S.incl=el.checked;render()}
+  else if(el.dataset&&el.dataset.bud){const T=clone(trip());T.budget[el.dataset.bud]=num(el.value);saveTrip(T)}});
+window.addEventListener('hashchange',()=>{render();window.scrollTo(0,0)});
+
+/* ---------- boot ---------- */
+document.addEventListener('submit',ev=>{if(ev.target.id==='ff'){ev.preventDefault();addFamily()}});
+async function whoAmI(){
+  let r;try{r=await api('GET','/api/me')}catch(err){S.authBusy=false;S.me=null;render();return}
+  S.authBusy=false;S.me=r.email;S.role=r.role;render();if(S.role==='none')return;
+  S.cur=ls.get('ftp-cur');await loadTrips();loadFamily()}
+/* gentle refresh so changes by other family members show up */
+setInterval(()=>{if(S.me&&S.role&&S.role!=='none'&&!document.hidden&&!dlg.open)loadTrips()},20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.me&&S.role!=='none'&&!dlg.open)loadTrips()});
+S.authBusy=true;render();whoAmI();
+dlg.addEventListener('close',()=>render());
+}
+</script>
+</body>
+</html>

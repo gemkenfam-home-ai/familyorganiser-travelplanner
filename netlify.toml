@@ -1,0 +1,13 @@
+[build]
+  publish   = "public"
+  functions = "netlify/functions"
+
+# Security headers for every page
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    X-Content-Type-Options  = "nosniff"
+    X-Frame-Options         = "DENY"
+    Referrer-Policy         = "same-origin"
+    Strict-Transport-Security = "max-age=31536000"
