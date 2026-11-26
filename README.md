@@ -7,6 +7,7 @@ family-trip-portal/
 ├── public/index.html             ← the portal page (no secrets)
 ├── netlify/functions/api.mjs     ← the server part (sign-in, trips, family, receipts)
 ├── netlify.toml                  ← Netlify settings + security headers
+├── package.json                  ← lists the Supabase library the function uses
 ├── setup.sql                     ← one-time Supabase database setup
 ├── .env.example                  ← template, only for testing on your own computer
 └── .gitignore                    ← keeps .env and Netlify's local files out of git
@@ -46,7 +47,8 @@ netlify env:set SUPABASE_URL "https://YOUR-PROJECT.supabase.co"
 netlify env:set SUPABASE_ANON_KEY "PASTE-ANON-KEY"
 netlify env:set SECRET_KEY "$(openssl rand -hex 32)"
 
-# 7. Publish
+# 7. Install the Supabase library the function uses, then publish
+npm install
 netlify deploy --prod
 ```
 
@@ -58,7 +60,7 @@ The last command prints your **Website URL**.
 3. Go to the **Family** tab and add each family member's email address. Send them the link.
 
 ## Updating later
-- **Changed a file?** Run `cd ~/"AI Projects"/family-trip-portal && netlify deploy --prod` again.
+- **Changed a file?** Run `cd ~/"AI Projects"/family-trip-portal && npm install && netlify deploy --prod` again. If GitHub is linked, just `git push`; Netlify runs `npm install` for you.
 - **Changed a secret?** Run `netlify env:set NAME "new value"`, then `netlify deploy --prod`. Netlify picks up new values on the next deploy.
 - **Custom domain:** Netlify dashboard → your site → **Domain management**. HTTPS is set up automatically.
 

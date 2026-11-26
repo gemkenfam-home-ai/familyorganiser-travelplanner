@@ -88,5 +88,5 @@ exception when duplicate_object then null; end $$;
 
 -- 7. YOU, as the first admin  ⟵ change these two values
 insert into public.family (email, name, role)
-values (lower('you@example.com'), 'Your name', 'admin')
+values (lower('kennethpooncx@gmail.com'), 'Kenneth', 'admin')
 on conflict (email) do update set role = 'admin';

@@ -1,0 +1,9 @@
+{
+  "name": "family-trip-portal",
+  "private": true,
+  "type": "module",
+  "description": "Family Trip Portal - Netlify site + function",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4"
+  }
+}
